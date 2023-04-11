@@ -10,8 +10,8 @@ os.environ["CONTACT_GROUP"] = "Obsidian"
 # Default output folder path
 os.environ["OUTPUT_FOLDER"] = "📇 Contacts"
 
-APPLESCRIPT = f"""
-set AppleScript's text item delimiters to {""}
+APPLESCRIPT = """
+set AppleScript's text item delimiters to {delimiter}
 
 tell application "Contacts"
 
@@ -20,10 +20,10 @@ tell application "Contacts"
         delay 1
     end if
 
-    set vCardText to (get vcard of every person in group "{os.environ["CONTACT_GROUP"]}") as text
+    set vCardText to (get vcard of every person in group "{group}") as text
 
 end tell
-"""
+""".format(delimiter='""', group=os.environ["CONTACT_GROUP"])
 
 def vcard_to_markdown(vcard):
     markdown = f"## 👤 {vcard.fn.value}\n"
