@@ -32,7 +32,8 @@ def vcard_to_markdown(vcard):
         markdown += f"- 📧 Email: [{vcard.email.value}](mailto:{vcard.email.value})\n"
 
     if hasattr(vcard, 'tel'):
-        markdown += f"- ☎️ Phone: [{vcard.tel.value}](tel:{vcard.tel.value})\n"
+        for tel in vcard.tel_list:
+            markdown += f"- ☎️ Phone: [{tel.value}](tel:{tel.value})\n"
 
     if hasattr(vcard, 'bday'):
         bday = parse(vcard.bday.value).strftime("%Y%m%d")
@@ -68,10 +69,8 @@ def vcard_to_markdown(vcard):
         markdown += f"- 🗣️ Language: {vcard.lang.value}\n"
 
     if hasattr(vcard, 'adr'):
-        label = vcard.adr.value.street + ", " + vcard.adr.value.extended
-        if hasattr(vcard.adr.value, 'locality'):
-            label += ", " + vcard.adr.value.locality
-        markdown += f"- 🏠 Address: {label}\n"
+        for adr in vcard.adr_list:
+            markdown += f"- 🏠 Address: {adr.value}\n"
 
     return markdown.rstrip()
 
