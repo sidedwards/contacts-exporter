@@ -70,7 +70,8 @@ def vcard_to_markdown(vcard):
 
     if hasattr(vcard, 'adr'):
         for adr in vcard.adr_list:
-            markdown += f"- 🏠 Address: {adr.value}\n"
+            address_str = str(adr.value).replace('\n', ' ')
+            markdown += f"- 🏠 Address: {address_str}\n"
 
     return markdown.rstrip()
 
