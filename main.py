@@ -9,6 +9,9 @@ from dateutil.parser import parse
 os.environ["CONTACT_GROUP"] = "Obsidian"
 # Default output folder path
 os.environ["OUTPUT_FOLDER"] = "📇 Contacts"
+# Default output folder path for attachments (photo)
+os.environ["ATTACHMENT_FOLDER"] = "z_attachments"
+
 
 APPLESCRIPT = """
 set AppleScript's text item delimiters to {delimiter}
@@ -72,6 +75,16 @@ def vcard_to_markdown(vcard):
         for adr in vcard.adr_list:
             address_str = str(adr.value).replace('\n', ' ')
             markdown += f"- 🏠 Address: {address_str}\n"
+            
+    if hasattr(vcard, 'photo'):
+        
+        attachment_folder = os.environ["ATTACHMENT_FOLDER"]
+        os.makedirs(attachment_folder, exist_ok=True)
+        file_name = re.sub(r'[ \\/*?:"<>|]', '_', vcard.fn.value) + '.jpg'
+        with open(os.path.join(attachment_folder, file_name), 'wb') as fid:
+            fid.write(vcard.photo.value)
+        
+        markdown += f"\n![Photo](../{os.path.join(attachment_folder, file_name)})\n"
 
     return markdown.rstrip()
 
