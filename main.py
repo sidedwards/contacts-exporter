@@ -9,6 +9,10 @@ from dateutil.parser import parse
 os.environ["CONTACT_GROUP"] = "Obsidian"
 # Default output folder path
 os.environ["OUTPUT_FOLDER"] = "📇 Contacts"
+# Default output folder path for attachments (photo)
+# (relative to output folder path)
+os.environ["ATTACHMENT_FOLDER"] = "../z_attachments"
+
 
 APPLESCRIPT = """
 set AppleScript's text item delimiters to {delimiter}
@@ -27,13 +31,26 @@ end tell
 
 def vcard_to_markdown(vcard):
     markdown = f"## 👤 {vcard.fn.value}\n"
+    
+    if hasattr(vcard, 'x_abuid'):
+        markdown += f"[Open in Contacts](addressbook://{vcard.x_abuid.value})\n\n"
 
     if hasattr(vcard, 'email'):
-        markdown += f"- 📧 Email: [{vcard.email.value}](mailto:{vcard.email.value})\n"
+        for email in vcard.email_list:
+            try:
+                params = str(email.params["TYPE"]).replace("[","").replace("]","").replace("'","").lower()
+                markdown += f"- 📧 Email ({params}): [{vcard.email.value}](mailto:{vcard.email.value})\n"
+            except KeyError:  
+                markdown += f"- 📧 Email: [{vcard.email.value}](mailto:{vcard.email.value})\n"
 
     if hasattr(vcard, 'tel'):
         for tel in vcard.tel_list:
-            markdown += f"- ☎️ Phone: [{tel.value}](tel:{tel.value})\n"
+            try:
+                params = str(tel.params["TYPE"]).replace("[","").replace("]","").replace("'","").lower()
+                markdown += f"- ☎️ Phone ({params}): [{tel.value}](tel:{tel.value})\n"
+            except KeyError:
+                markdown += f"- ☎️ Phone: [{tel.value}](tel:{tel.value})\n"
+                
 
     if hasattr(vcard, 'bday'):
         bday = parse(vcard.bday.value).strftime("%Y%m%d")
@@ -72,6 +89,20 @@ def vcard_to_markdown(vcard):
         for adr in vcard.adr_list:
             address_str = str(adr.value).replace('\n', ' ')
             markdown += f"- 🏠 Address: {address_str}\n"
+            
+    if hasattr(vcard, 'photo'):
+        output_folder = os.environ["OUTPUT_FOLDER"]
+        attachment_folder = os.environ["ATTACHMENT_FOLDER"]
+        os.makedirs(os.path.join(output_folder, attachment_folder), exist_ok=True)
+        file_name = (
+            re.sub(r'[ \\/*?:"<>|]', '_', vcard.fn.value)
+            + '.'
+            + vcard.photo.params['TYPE'][0].lower()
+        )
+        with open(os.path.join(output_folder, attachment_folder, file_name), 'wb') as fid:
+            fid.write(vcard.photo.value)
+        
+        markdown += f"\n![Photo]({os.path.join(attachment_folder, file_name)})\n"
 
     return markdown.rstrip()
 
