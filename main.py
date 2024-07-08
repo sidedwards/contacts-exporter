@@ -39,9 +39,9 @@ def vcard_to_markdown(vcard):
         for email in vcard.email_list:
             try:
                 params = str(email.params["TYPE"]).replace("[","").replace("]","").replace("'","").lower()
-                markdown += f"- 📧 Email ({params}): [{vcard.email.value}](mailto:{vcard.email.value})\n"
+                markdown += f"- 📧 Email ({params}): [{email.value}](mailto:{email.value})\n"
             except KeyError:  
-                markdown += f"- 📧 Email: [{vcard.email.value}](mailto:{vcard.email.value})\n"
+                markdown += f"- 📧 Email: [{email.value}](mailto:{email.value})\n"
 
     if hasattr(vcard, 'tel'):
         for tel in vcard.tel_list:
